@@ -22,9 +22,11 @@ rankall <- function(outcome, num = "best") {
 	outcomes <- outcomes[!is.na(outcomes[, index]), ]
 	
 	
-	## For each state, find the hospital of the given rank
+	# Find all the outcomes for a given state
 	outcomes.bystate <- split(outcomes, outcomes$State)
 	
+	# Sort each of the outcomes for a given state and select the targeted
+	# hospital by rank
 	sorted.outcomes  <- sapply(outcomes.bystate, function(x) {
 		x <- x[order(x[, index], x$Hospital.Name), ]
 		if (num == "best") {
@@ -38,6 +40,8 @@ rankall <- function(outcome, num = "best") {
 				x[num, "Hospital.Name"]
 		}
 	})
+	
+	# formulate the result into a data frame as required
 	result <- data.frame(hospital = sorted.outcomes)
 	result$hospital <- as.character(result$hospital)
 	result$state    <- rownames(result)
