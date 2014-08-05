@@ -2,31 +2,31 @@ rankall <- function(outcome, num = "best") {
 	## Read outcome data
 	outcomes <- read.csv("outcome-of-care-measures.csv", 
 			     colClasses = "character")
-	
+
 	## Check that state and outcome are valid
-	
+
 	#validate input
 	valid.outcomes <- c("heart attack", "heart failure", "pneumonia")
 	if(!is.element(outcome, valid.outcomes)) 
 		stop("invalid outcome")
-	
+
 	# Determine the col index
 	index <- if(outcome == "heart attack")
 		11
 	else if (outcome == "heart failure")
 		17
 	else    23
-	
+
 	# Remove NA's
 	outcomes[, index] <- as.numeric(outcomes[, index])
 	outcomes <- outcomes[!is.na(outcomes[, index]), ]
+
+	outcomes <- outcomes[order(outcomes[, index], outcomes$Hospital.Name), ]
 	
-	
-	# Sort each of the outcomes for a given state and select the targeted
-	# hospital by rank
-	sorted.outcomes  <- tapply(outcomes[, index], outcomes$State, 
-	   function(x) {
-		x <- outcomes[order(x), ]
+	## For each state, find the hospital of the given rank
+	outcomes.bystate <- split(outcomes, outcomes$State)
+
+	sorted.outcomes  <- sapply(outcomes.bystate, function(x) {
 		if (num == "best") {
 			x[1, "Hospital.Name"]
 		} else if (num == "worst") {
@@ -38,11 +38,9 @@ rankall <- function(outcome, num = "best") {
 				x[num, "Hospital.Name"]
 		}
 	})
-	
-	# formulate the result into a data frame as required
 	result <- data.frame(hospital = sorted.outcomes)
 	result$hospital <- as.character(result$hospital)
 	result$state    <- rownames(result)
-	
+
 	result
 }
